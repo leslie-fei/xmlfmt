@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-xmlfmt/xmlfmt"
@@ -49,6 +50,10 @@ func main() {
 	if opts.Output == "" {
 		writer = os.Stdout
 	} else {
+		err = os.MkdirAll(filepath.Dir(opts.Output), os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 		file, err := os.OpenFile(opts.Output, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 		if err != nil {
 			panic(err)
