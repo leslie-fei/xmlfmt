@@ -4,18 +4,16 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/go-xmlfmt/xmlfmt"
 	"github.com/jessevdk/go-flags"
 )
 
 type Options struct {
-	Filei  string `short:"f" long:"file" env:"XMLFMT_FILEI" description:"The xml filepath if is - read from stdin" required:"true"`
-	Prefix string `short:"p" long:"prefix" env:"XMLFMT_PREFIX" description:"Each element begins on a new line and this prefix"`
-	Indent string `short:"i" long:"indent" env:"XMLFMT_INDENT" description:"Indent string for nested elements" default:"  "`
-	Nested bool   `short:"n" long:"nested" env:"XMLFMT_NESTED" description:"Nested tags in comments"`
-	Output string `short:"o" long:"output" description:"The output filepath"`
+	Filei    string   `short:"f" long:"file" env:"XMLFMT_FILEI" description:"The xml filepath if is - read from stdin" required:"true"`
+	Prefix   string   `short:"p" long:"prefix" env:"XMLFMT_PREFIX" description:"Each element begins on a new line and this prefix"`
+	Indent   string   `short:"i" long:"indent" env:"XMLFMT_INDENT" description:"Indent string for nested elements" default:"  "`
+	Output   string   `short:"o" long:"output" description:"The output filepath"`
+	Replaces []string `short:"r" long:"replace" description:"The output content replace"`
 }
 
 func main() {
@@ -43,8 +41,10 @@ func main() {
 		panic(err)
 	}
 
-	out := xmlfmt.FormatXML(string(bb), opts.Prefix, opts.Indent, opts.Nested)
-	out = strings.TrimSpace(out)
+	out, err := FormatXML(bb, opts.Prefix, opts.Indent, opts.Replaces)
+	if err != nil {
+		panic(err)
+	}
 
 	var writer io.Writer
 	if opts.Output == "" {
@@ -62,7 +62,7 @@ func main() {
 		writer = file
 	}
 
-	if _, err = writer.Write([]byte(out)); err != nil {
+	if _, err = writer.Write(out); err != nil {
 		panic(err)
 	}
 }
